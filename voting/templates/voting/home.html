@@ -1,0 +1,110 @@
+{% extends 'voting/base.html' %}
+
+{% block title %}EduVote | Blockchain Voting Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, #60a5fa, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+        color: var(--text-muted);
+        font-size: 1.25rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .institution-card {
+        padding: 2rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .institution-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+        border-color: var(--accent-primary);
+        color: var(--text-main);
+    }
+    
+    .card-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .admin-access {
+        margin-top: 4rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">EduVote</h1>
+    <p class="hero-subtitle">Role-based secure voting for educational institutions. Verified via blockchain for absolute integrity.</p>
+</div>
+
+<div class="row g-4 justify-content-center mt-2">
+    <!-- School -->
+    <div class="col-md-4">
+        <a href="{% url 'login' 'school' %}" class="glass-panel institution-card">
+            <i class="fa-solid fa-school card-icon"></i>
+            <h3 class="card-title">School student</h3>
+            <p class="text-muted mb-0">Roll Number, Name, Class</p>
+        </a>
+    </div>
+
+    <!-- PU -->
+    <div class="col-md-4">
+        <a href="{% url 'login' 'pu' %}" class="glass-panel institution-card">
+            <i class="fa-solid fa-building-columns card-icon"></i>
+            <h3 class="card-title">PU College student</h3>
+            <p class="text-muted mb-0">Reg Number, Name, Year</p>
+        </a>
+    </div>
+
+    <!-- Engineering -->
+    <div class="col-md-4">
+        <a href="{% url 'login' 'engineering' %}" class="glass-panel institution-card">
+            <i class="fa-solid fa-laptop-code card-icon"></i>
+            <h3 class="card-title">Engineering student</h3>
+            <p class="text-muted mb-0">USN, Branch, Year, Name</p>
+        </a>
+    </div>
+</div>
+
+<div class="admin-access">
+    <div class="glass-panel py-4 px-5 d-inline-block">
+        <h5 class="mb-3 text-muted">Admin Portal</h5>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{% url 'admin_signup' %}" class="btn btn-outline-primary"><i class="fa-solid fa-user-plus"></i> Admin Sign Up</a>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Admin Sign In</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

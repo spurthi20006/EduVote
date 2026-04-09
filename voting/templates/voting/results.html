@@ -1,0 +1,78 @@
+{% extends 'voting/base.html' %}
+
+{% block title %}Live Results | EduVote{% endblock %}
+
+{% block content %}
+<div class="row mb-5 align-items-center">
+    <div class="col-md-8">
+        <h2>Live Election Results</h2>
+        <p class="text-muted">Transparent, real-time vote tally from the blockchain.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        {% if chain_valid %}
+            <span class="badge bg-success p-2 px-3 shadow"><i class="fa-solid fa-link"></i> Blockchain Validated</span>
+        {% else %}
+            <span class="badge bg-danger p-2 px-3 shadow"><i class="fa-solid fa-link-slash"></i> Chain Tampered</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Results Tally -->
+    <div class="col-lg-8">
+        <div class="glass-panel p-4 mb-4">
+            <h4 class="mb-4">Candidate Standings (Total: {{ total_votes }} {% if total_votes == 1 %}vote{% else %}votes{% endif %})</h4>
+            
+            {% for item in results %}
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="fw-bold">{{ item.candidate.name }} <small class="text-muted fw-normal">({{ item.candidate.position }})</small></span>
+                    <span class="fw-bold text-primary">{{ item.votes }} ({{ item.percentage }}%)</span>
+                </div>
+                <div class="progress" style="height: 12px; background-color: var(--bg-color);">
+                    <div class="progress-bar bg-gradient" 
+                         role="progressbar" 
+                         style="width: {{ item.percentage }}%; background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));" 
+                         aria-valuenow="{{ item.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-inbox fa-3x mb-3"></i>
+                <p>No votes have been cast yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Blockchain Explorer Snippet -->
+    <div class="col-lg-4">
+        <div class="glass-panel p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">Latest Blocks</h5>
+                <i class="fa-solid fa-cubes text-muted"></i>
+            </div>
+            
+            <div class="blockchain-feed" style="max-height: 400px; overflow-y: auto;">
+                {% for block in blockchain_blocks %}
+                <div class="card bg-dark border-secondary mb-3">
+                    <div class="card-header border-secondary py-1 px-2 d-flex justify-content-between align-items-center" style="font-size: 0.8rem;">
+                        <span class="text-primary fw-bold">Block #{{ block.index }}</span>
+                        <span class="text-muted">{{ block.timestamp_readable }}</span>
+                    </div>
+                    <div class="card-body p-2 font-monospace" style="font-size: 0.75rem; word-break: break-all;">
+                        <div class="mb-1"><span class="text-muted">Voter Hash:</span> {{ block.user_id_hash|truncatechars:20 }}</div>
+                        <div class="mb-1"><span class="text-muted">Voted For:</span> <span class="text-warning">{{ block.candidate }}</span></div>
+                        <div class="mb-1"><span class="text-muted">Prev Hash:</span> {{ block.previous_hash|truncatechars:20 }}</div>
+                        <div><span class="text-muted">Hash:</span> {{ block.hash|truncatechars:20 }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted fs-sm">Chain contains only genesis block.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

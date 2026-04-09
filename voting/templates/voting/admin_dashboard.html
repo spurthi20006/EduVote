@@ -1,0 +1,204 @@
+{% extends 'voting/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}EduVote | {{ profile.get_role_display }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-0"><i class="fa-solid fa-shield-halved text-primary me-2"></i> {{ profile.get_role_display }} Dashboard</h2>
+        <p class="text-muted">Managed by {{ request.user.username }}</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-center justify-content-end gap-2">
+        <a href="/admin/voting/student/add/" target="_blank" class="btn btn-sm btn-outline-info"><i class="fa-solid fa-user-plus"></i> Manual Add</a>
+        <a href="/admin/" target="_blank" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-database"></i> Django Admin</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Stats Cards -->
+    <div class="col-md-3">
+        <div class="glass-panel p-3 text-center h-100">
+            <div class="text-muted mb-2">Total Chain Blocks</div>
+            <h2 class="text-info">{{ chain_length }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-panel p-3 text-center h-100">
+            <div class="text-muted mb-2">Total Students</div>
+            <h2 class="text-primary">{{ students_total }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-panel p-3 text-center h-100">
+            <div class="text-muted mb-2">Votes Cast</div>
+            <h2 class="text-warning">{{ students_voted }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-panel p-3 text-center h-100">
+            <div class="text-muted mb-2">Chain Status</div>
+            {% if chain_valid %}
+                <h2 class="text-success"><i class="fa-solid fa-check-circle"></i> Valid</h2>
+            {% else %}
+                <h2 class="text-danger"><i class="fa-solid fa-times-circle"></i> Invalid</h2>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4 g-4">
+    <!-- Results Summary -->
+    <div class="col-lg-7">
+        <div class="glass-panel p-4 h-100">
+            <h4 class="mb-4"><i class="fa-solid fa-square-poll-vertical text-warning me-2"></i> Live Vote Count</h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover text-light align-middle mb-0" style="background: transparent;">
+                    <thead>
+                        <tr>
+                            <th class="border-secondary">Candidate</th>
+                            <th class="border-secondary text-end">Votes</th>
+                            <th class="border-secondary">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in results %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ res.candidate.name }}</div>
+                                <small class="text-muted">{{ res.candidate.position }}</small>
+                            </td>
+                            <td class="text-end fw-bold text-warning">{{ res.votes }}</td>
+                            <td style="width: 40%">
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 6px; background-color: var(--bg-color);">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ res.percentage }}%;"></div>
+                                    </div>
+                                    <small>{{ res.percentage }}%</small>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3">No candidates registered for this election.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excel Upload -->
+    <div class="col-lg-5">
+        <div class="glass-panel p-4 h-100">
+            <h4 class="mb-3"><i class="fa-solid fa-file-excel text-success me-2"></i> Bulk Student Upload</h4>
+            <p class="small text-muted mb-4">Upload an Excel file (.xlsx) to add multiple students at once. Format: 
+                <strong>{{ profile.institution_type|capfirst }} ID, Name, {% if profile.role == 'school' %}Class{% elif profile.role == 'pu' %}Year{% else %}Year, Branch, Email{% endif %}</strong>
+            </p>
+            
+            <form action="{% url 'upload_excel' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ excel_form|crispy }}
+                <div class="alert alert-info py-2 small mb-3">
+                    <i class="fa-solid fa-circle-info"></i> Ensure data matches institutional requirements.
+                </div>
+                <button type="submit" class="btn btn-success w-100"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Process</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if profile.role == 'super_admin' %}
+<!-- Main Admin Section -->
+<div class="row mb-4 g-4">
+    <div class="col-lg-6">
+        <div class="glass-panel p-4 h-100">
+            <h4 class="mb-4"><i class="fa-solid fa-users-gear text-info me-2"></i> User Admin Management</h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover text-light align-middle mb-0" style="background: transparent;">
+                    <thead>
+                        <tr>
+                            <th class="border-secondary">Admin Username</th>
+                            <th class="border-secondary">Roll/Institution</th>
+                            <th class="border-secondary">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for adm in admin_profiles %}
+                        <tr>
+                            <td>{{ adm.user.username }}</td>
+                            <td><span class="badge bg-secondary">{{ adm.get_role_display }}</span></td>
+                            <td><span class="text-success small"><i class="fa-solid fa-circle-check"></i> Authorized</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No other admins registered yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-panel p-4 h-100">
+            <h4 class="mb-3"><i class="fa-solid fa-chart-pie text-primary me-2"></i> Global System Usage</h4>
+            {% for stat in institution_stats %}
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-capitalize">{{ stat.institution_type }} Voter Turnout</span>
+                    <span class="text-muted small">{{ stat.voted }} / {{ stat.total }}</span>
+                </div>
+                <div class="progress" style="height: 10px; background-color: var(--bg-color);">
+                    {% if stat.total > 0 %}
+                    {% widthratio stat.voted stat.total 100 as perc %}
+                    <div class="progress-bar bg-success" style="width: {{ perc }}%"></div>
+                    {% else %}
+                    <div class="progress-bar" style="width: 0%"></div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Full Blockchain Ledger -->
+<div class="glass-panel p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0"><i class="fa-solid fa-link text-info me-2"></i> Cryptographic Ledger (Audit Trail)</h4>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-dark table-striped text-light font-monospace small" style="background: transparent;">
+            <thead>
+                <tr>
+                    <th class="border-secondary">Idx</th>
+                    <th class="border-secondary">Voter Hash (SHA-256)</th>
+                    <th class="border-secondary">Candidate</th>
+                    <th class="border-secondary">Timestamp</th>
+                    <th class="border-secondary">Block Hash</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for block in vote_data %}
+                <tr>
+                    <td>{{ block.index }}</td>
+                    <td class="text-muted" title="{{ block.user_id_hash }}">{{ block.user_id_hash|truncatechars:18 }}</td>
+                    <td class="text-warning fw-bold">{{ block.candidate }}</td>
+                    <td><small>{{ block.timestamp }}</small></td>
+                    <td class="text-info" title="{{ block.hash }}">{{ block.hash|truncatechars:20 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Only genesis block exists. No votes cast yet in your institution.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

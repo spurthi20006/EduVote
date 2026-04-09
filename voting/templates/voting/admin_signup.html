@@ -1,0 +1,27 @@
+{% extends 'voting/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Admin Registration | EduVote{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-panel p-5">
+            <h2 class="text-center mb-4"><i class="fa-solid fa-user-plus text-primary"></i> Admin Registration</h2>
+            <p class="text-muted text-center mb-4">Create your account to manage elections for your institution.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-gradient py-2">Create Admin Account</button>
+                </div>
+            </form>
+            
+            <div class="mt-4 text-center">
+                <small>Already have an account? <a href="/admin/login/" class="text-primary fw-bold">Login here</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
